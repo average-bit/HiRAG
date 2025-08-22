@@ -3,7 +3,8 @@ import sys
 import json
 import time
 import argparse
-sys.path.append("../")
+script_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.dirname(script_dir))
 import os
 import logging
 import numpy as np
@@ -16,12 +17,12 @@ from hirag.base import BaseKVStorage
 from hirag._utils import compute_args_hash
 from tqdm import tqdm
 
-WORKING_DIR = f"./datasets/cs/work_dir_deepseek_hi"
+WORKING_DIR = os.path.join(script_dir, "datasets", "cs", "work_dir_deepseek_hi")
 MAX_QUERIES = 100
 TOTAL_TOKEN_COST = 0
 TOTAL_API_CALL_COST = 0
 
-with open('config.yaml', 'r') as file:
+with open(os.path.join(os.path.dirname(script_dir), 'config.yaml'), 'r') as file:
     config = yaml.safe_load(file)
 
 # Extract configurations
@@ -123,8 +124,8 @@ if __name__ == "__main__":
         MAX_QUERIES = 130
     elif DATASET == "cs" or DATASET == "agriculture" or DATASET == "legal":
         MAX_QUERIES = 100
-    input_path = f"./datasets/{DATASET}/{DATASET}.jsonl"
-    output_path = f"./datasets/{DATASET}/{DATASET}_{args.mode}_result_deepseek_pro.jsonl"
+    input_path = os.path.join(script_dir, 'datasets', DATASET, f'{DATASET}.jsonl')
+    output_path = os.path.join(script_dir, 'datasets', DATASET, f'{DATASET}_{args.mode}_result_deepseek_pro.jsonl')
     graph_func = HiRAG(
         working_dir=WORKING_DIR, 
         enable_llm_cache=False,

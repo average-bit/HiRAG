@@ -42,8 +42,7 @@ graph_func = HiRAG(
     enable_naive_rag=True
     )
 # indexing
-with open("path_to_your_context.txt", "r") as f:
-    graph_func.insert(f.read())
+graph_func.insert("path_to_your_context.txt")
 # retrieval & generation
 print("Perform hi search:")
 print(graph_func.query("The question you want to ask?", param=QueryParam(mode="hi")))

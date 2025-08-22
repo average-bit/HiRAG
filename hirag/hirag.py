@@ -50,6 +50,7 @@ from .base import (
     StorageNameSpace,
     QueryParam,
 )
+from .datainfo.datainfo import DataInfo
 
 
 @dataclass
@@ -210,9 +211,11 @@ class HiRAG:
             partial(self.cheap_model_func, hashing_kv=self.llm_response_cache)
         )
 
-    def insert(self, string_or_strings):
+    def insert(self, data_or_path: Union[DataInfo, str]):
         loop = always_get_an_event_loop()
-        return loop.run_until_complete(self.ainsert(string_or_strings))
+        if isinstance(data_or_path, str):
+            data_or_path = DataInfo.from_path(data_or_path)
+        return loop.run_until_complete(self.ainsert(data_or_path))
 
     def query(self, query: str, param: QueryParam = QueryParam()):
         loop = always_get_an_event_loop()
@@ -295,17 +298,16 @@ class HiRAG:
         await self._query_done()
         return response
 
-    async def ainsert(self, string_or_strings):
+    async def ainsert(self, data_info: DataInfo):
         await self._insert_start()
         try:
-            if isinstance(string_or_strings, str):
-                string_or_strings = [string_or_strings]
+            string_or_strings = [data_info.text]
             # ---------- new docs
-            new_docs = {    # dict: {hash: ori_content}
+            new_docs = {
                 compute_mdhash_id(c.strip(), prefix="doc-"): {"content": c.strip()}
                 for c in string_or_strings
             }
-            _add_doc_keys = await self.full_docs.filter_keys(list(new_docs.keys()))     # filter the docs that has already in the storage.
+            _add_doc_keys = await self.full_docs.filter_keys(list(new_docs.keys()))
             new_docs = {k: v for k, v in new_docs.items() if k in _add_doc_keys}
             if not len(new_docs):
                 logger.warning(f"All docs are already in the storage")
